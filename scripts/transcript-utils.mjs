@@ -32,8 +32,8 @@ export function normalizeTranscript(raw, track) {
       type: word.type || 'word',
     };
 
-    if (word.speaker_id != null) {
-      normalized.speakerId = word.speaker_id;
+    if (word.speaker_id != null || word.speakerId != null) {
+      normalized.speakerId = word.speaker_id ?? word.speakerId;
     }
 
     if (word.logprob != null) {
@@ -42,6 +42,7 @@ export function normalizeTranscript(raw, track) {
 
     return normalized;
   });
+  const speakers = buildSpeakers(words);
 
   const normalized = {
     id: track.id,
@@ -50,7 +51,8 @@ export function normalizeTranscript(raw, track) {
     duration: roundTo(Number(track.duration), 6),
     sha256: track.sha256,
     language: raw.language_code || raw.language || track.language || 'en',
-    text: raw.text || words.map((word) => word.text).join(' '),
+    text: raw.text || joinWords(words),
+    speakers,
     words,
     segments: buildSegments(words),
   };
@@ -70,6 +72,7 @@ export function buildSegments(
 ) {
   const segments = [];
   let current = [];
+  const speakerLabels = buildSpeakerLabelMap(words);
   const indexedWords = words.map((word, index) => ({
     ...word,
     index: word.index ?? index,
@@ -82,21 +85,32 @@ export function buildSegments(
 
     const first = current[0];
     const last = current[current.length - 1];
-
-    segments.push({
+    const speakerId = current.find((word) => word.speakerId != null)?.speakerId;
+    const segment = {
       index: segments.length,
       start: first.start,
       end: last.end,
       text: joinWords(current),
       wordStart: first.index,
       wordEnd: last.index,
-    });
+    };
+
+    if (speakerId != null) {
+      segment.speakerId = speakerId;
+      segment.speakerLabel = speakerLabels.get(speakerId);
+    }
+
+    segments.push(segment);
 
     current = [];
   }
 
   for (const word of indexedWords) {
     if (!Number.isFinite(word.start) || !Number.isFinite(word.end) || !word.text) {
+      continue;
+    }
+
+    if (isSpacingToken(word)) {
       continue;
     }
 
@@ -129,8 +143,11 @@ export function buildSegments(
 
 export function formatVtt(segments) {
   const cues = segments.map(
-    (segment) =>
-      `${segment.index + 1}\n${formatTimestamp(segment.start)} --> ${formatTimestamp(segment.end)}\n${segment.text}\n`,
+    (segment) => {
+      const text = segment.speakerLabel ? `${segment.speakerLabel}: ${segment.text}` : segment.text;
+
+      return `${segment.index + 1}\n${formatTimestamp(segment.start)} --> ${formatTimestamp(segment.end)}\n${text}\n`;
+    },
   );
 
   return `WEBVTT\n\n${cues.join('\n')}`;
@@ -216,10 +233,33 @@ export function buildManifest(transcripts) {
 
 function joinWords(words) {
   return words
-    .map((word) => word.text)
+    .filter((word) => !isSpacingToken(word))
+    .map((word) => word.text.trim())
     .join(' ')
     .replace(/\s+([,.!?;:])/g, '$1')
     .trim();
+}
+
+function buildSpeakers(words) {
+  return [...buildSpeakerLabelMap(words)].map(([id, label]) => ({ id, label }));
+}
+
+function buildSpeakerLabelMap(words) {
+  const speakers = new Map();
+
+  for (const word of words) {
+    if (word.speakerId == null || speakers.has(word.speakerId)) {
+      continue;
+    }
+
+    speakers.set(word.speakerId, `Speaker ${speakers.size + 1}`);
+  }
+
+  return speakers;
+}
+
+function isSpacingToken(word) {
+  return word.type === 'spacing' || String(word.text || '').trim().length === 0;
 }
 
 function formatTimestamp(seconds) {

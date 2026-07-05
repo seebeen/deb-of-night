@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { estimateCredits } from './transcript-utils.mjs';
-import { discoverTracks, printInventory } from './transcribe-elevenlabs.mjs';
+import { createTranscriptionOptions, discoverTracks, printInventory } from './transcribe-elevenlabs.mjs';
 
 test('dry-run inventories the five radio loops and estimates keyterm credits', () => {
   const lines = [];
@@ -28,4 +28,20 @@ test('dry-run inventories the five radio loops and estimates keyterm credits', (
     .finally(() => {
       console.log = originalLog;
     });
+});
+
+test('createTranscriptionOptions enables Scribe v2 diarization without fixed speaker count', () => {
+  const options = createTranscriptionOptions('/tmp/radio_loop_1.mp3');
+
+  assert.equal(options.modelId, 'scribe_v2');
+  assert.equal(options.languageCode, 'en');
+  assert.equal(options.timestampsGranularity, 'word');
+  assert.equal(options.tagAudioEvents, true);
+  assert.equal(options.diarize, true);
+  assert.equal(Object.hasOwn(options, 'numSpeakers'), false);
+  assert.deepEqual(options.file, {
+    path: '/tmp/radio_loop_1.mp3',
+    filename: 'radio_loop_1.mp3',
+    contentType: 'audio/mpeg',
+  });
 });

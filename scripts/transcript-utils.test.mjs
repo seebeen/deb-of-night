@@ -77,6 +77,97 @@ test('normalizeTranscript preserves raw word timing and derives caption segments
   assert.doesNotThrow(() => validateNormalizedTranscript(normalized));
 });
 
+test('normalizeTranscript maps diarized speakers onto transcript metadata and segments', () => {
+  const raw = {
+    text: 'Hello, LA. Hi, Deb.',
+    language_code: 'en',
+    words: [
+      { text: 'Hello,', start: 0, end: 0.3, type: 'word', speaker_id: 'speaker_0' },
+      { text: ' ', start: 0.3, end: 0.35, type: 'spacing' },
+      { text: 'LA.', start: 0.35, end: 0.8, type: 'word', speaker_id: 'speaker_0' },
+      { text: ' ', start: 0.8, end: 0.9, type: 'spacing' },
+      { text: 'Hi,', start: 0.9, end: 1.2, type: 'word', speakerId: 'speaker_1' },
+      { text: ' ', start: 1.2, end: 1.25, type: 'spacing' },
+      { text: 'Deb.', start: 1.25, end: 1.6, type: 'word', speakerId: 'speaker_1' },
+    ],
+  };
+
+  const normalized = normalizeTranscript(raw, {
+    id: 'radio_loop_1',
+    title: 'The Deb of Night #1',
+    audioSrc: 'audio/radio_loop_1.mp3',
+    duration: 10,
+    sha256: 'abc123',
+  });
+
+  assert.deepEqual(normalized.speakers, [
+    { id: 'speaker_0', label: 'Speaker 1' },
+    { id: 'speaker_1', label: 'Speaker 2' },
+  ]);
+  assert.equal(normalized.words[0].speakerId, 'speaker_0');
+  assert.equal(normalized.words[4].speakerId, 'speaker_1');
+  assert.deepEqual(
+    normalized.segments.map(({ text, speakerId, speakerLabel, wordStart, wordEnd }) => ({
+      text,
+      speakerId,
+      speakerLabel,
+      wordStart,
+      wordEnd,
+    })),
+    [
+      {
+        text: 'Hello, LA.',
+        speakerId: 'speaker_0',
+        speakerLabel: 'Speaker 1',
+        wordStart: 0,
+        wordEnd: 2,
+      },
+      {
+        text: 'Hi, Deb.',
+        speakerId: 'speaker_1',
+        speakerLabel: 'Speaker 2',
+        wordStart: 4,
+        wordEnd: 6,
+      },
+    ],
+  );
+});
+
+test('buildSegments splits speaker changes across spacing tokens and keeps text spacing clean', () => {
+  const words = [
+    { index: 0, text: 'Hello,', start: 0, end: 0.3, type: 'word', speakerId: 'speaker_0' },
+    { index: 1, text: ' ', start: 0.3, end: 0.35, type: 'spacing' },
+    { index: 2, text: 'LA.', start: 0.35, end: 0.8, type: 'word', speakerId: 'speaker_0' },
+    { index: 3, text: ' ', start: 0.8, end: 0.9, type: 'spacing' },
+    { index: 4, text: 'Hi,', start: 0.9, end: 1.2, type: 'word', speakerId: 'speaker_1' },
+    { index: 5, text: ' ', start: 1.2, end: 1.25, type: 'spacing' },
+    { index: 6, text: 'Deb.', start: 1.25, end: 1.6, type: 'word', speakerId: 'speaker_1' },
+  ];
+
+  assert.deepEqual(buildSegments(words), [
+    {
+      index: 0,
+      start: 0,
+      end: 0.8,
+      text: 'Hello, LA.',
+      wordStart: 0,
+      wordEnd: 2,
+      speakerId: 'speaker_0',
+      speakerLabel: 'Speaker 1',
+    },
+    {
+      index: 1,
+      start: 0.9,
+      end: 1.6,
+      text: 'Hi, Deb.',
+      wordStart: 4,
+      wordEnd: 6,
+      speakerId: 'speaker_1',
+      speakerLabel: 'Speaker 2',
+    },
+  ]);
+});
+
 test('formatVtt emits deterministic WebVTT cues from segments', () => {
   const vtt = formatVtt([
     { index: 0, start: 0, end: 0.8, text: 'Good evening.' },
@@ -88,6 +179,20 @@ test('formatVtt emits deterministic WebVTT cues from segments', () => {
     'WEBVTT\n\n' +
       '1\n00:00:00.000 --> 00:00:00.800\nGood evening.\n\n' +
       '2\n00:00:02.400 --> 00:00:03.400\nYou night owls\n',
+  );
+});
+
+test('formatVtt prefixes cues with visible speaker labels', () => {
+  const vtt = formatVtt([
+    { index: 0, start: 0, end: 0.8, text: 'Hello, LA.', speakerLabel: 'Speaker 1' },
+    { index: 1, start: 0.9, end: 1.6, text: 'Hi, Deb.', speakerLabel: 'Speaker 2' },
+  ]);
+
+  assert.equal(
+    vtt,
+    'WEBVTT\n\n' +
+      '1\n00:00:00.000 --> 00:00:00.800\nSpeaker 1: Hello, LA.\n\n' +
+      '2\n00:00:00.900 --> 00:00:01.600\nSpeaker 2: Hi, Deb.\n',
   );
 });
 

@@ -57,6 +57,17 @@ const KEYTERMS = [
   'Smiling Jack',
 ];
 
+const TRANSCRIPTION_OPTIONS = {
+  modelId: 'scribe_v2',
+  languageCode: 'en',
+  timestampsGranularity: 'word',
+  tagAudioEvents: true,
+  diarize: true,
+  temperature: 0,
+  seed: 2600,
+  keyterms: KEYTERMS,
+};
+
 const flags = new Set(process.argv.slice(2));
 
 async function main() {
@@ -102,21 +113,7 @@ async function main() {
       raw = JSON.parse(await readFile(rawPath, 'utf8'));
     } else {
       console.log(`Transcribing ${track.audioSrc}`);
-      raw = await client.speechToText.convert({
-        file: {
-          path: track.absolutePath,
-          filename: path.basename(track.absolutePath),
-          contentType: 'audio/mpeg',
-        },
-        modelId: 'scribe_v2',
-        languageCode: 'en',
-        timestampsGranularity: 'word',
-        tagAudioEvents: true,
-        diarize: false,
-        temperature: 0,
-        seed: 2600,
-        keyterms: KEYTERMS,
-      });
+      raw = await client.speechToText.convert(createTranscriptionOptions(track.absolutePath));
       await writeJson(rawPath, raw);
     }
 
@@ -213,6 +210,17 @@ export function printInventory(tracks, estimate) {
   console.log(`Base STT credits: ${estimate.baseCredits}`);
   console.log(`Estimated credits with keyterms: ${estimate.estimatedCredits}`);
   console.log(`Keyterms: ${KEYTERMS.length}`);
+}
+
+export function createTranscriptionOptions(filePath) {
+  return {
+    file: {
+      path: filePath,
+      filename: path.basename(filePath),
+      contentType: 'audio/mpeg',
+    },
+    ...TRANSCRIPTION_OPTIONS,
+  };
 }
 
 function rawOutputPath(id) {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-05T17:56:04.475Z",
+  "generatedAt": "2026-07-05T18:36:01.420Z",
   "provider": "elevenlabs",
   "model": "scribe_v2",
   "tracks": [
@@ -13,7 +13,7 @@
       "sha256": "414babae8c545ce99e1b56aa355e9b71b92e9b1fab039352c77e9ae42295a5b0",
       "language": "en",
       "wordCount": 2522,
-      "segmentCount": 269
+      "segmentCount": 188
     },
     {
       "id": "radio_loop_2",
@@ -24,8 +24,8 @@
       "duration": 394.1355,
       "sha256": "66173e3ef8e3fc25804bf3b510611f90e99a284e92cfc1a04ff5eb3b9d629981",
       "language": "en",
-      "wordCount": 2345,
-      "segmentCount": 222
+      "wordCount": 2349,
+      "segmentCount": 149
     },
     {
       "id": "radio_loop_3",
@@ -36,8 +36,8 @@
       "duration": 445.5445,
       "sha256": "75d7d346bb2ef5617ba1557625b1462fb6f9fb597b23d6189c9e4e75687f38e6",
       "language": "en",
-      "wordCount": 2617,
-      "segmentCount": 250
+      "wordCount": 2621,
+      "segmentCount": 179
     },
     {
       "id": "radio_loop_4",
@@ -48,8 +48,8 @@
       "duration": 413.910167,
       "sha256": "48deb44de09acf0ca09e08c64c50101f836ea062d3c5b5a80b7253f5ae56c765",
       "language": "en",
-      "wordCount": 2407,
-      "segmentCount": 238
+      "wordCount": 2403,
+      "segmentCount": 166
     },
     {
       "id": "radio_loop_5",
@@ -60,8 +60,8 @@
       "duration": 1249.750167,
       "sha256": "edee90d56a5956af39ee1eac636bfc215f5963b7d2bdefc3105e1b77bcd2f24c",
       "language": "en",
-      "wordCount": 5297,
-      "segmentCount": 598
+      "wordCount": 5292,
+      "segmentCount": 412
     }
   ]
 }
