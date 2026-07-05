@@ -13,10 +13,22 @@ test('transcript renders through one text surface', () => {
   assert.doesNotMatch(mainJs, /\brenderLyrics\b/);
 });
 
-test('show title is styled to stay on one line', () => {
-  const h1Block = stylesCss.match(/h1\s*{(?<body>[^}]*)}/)?.groups.body;
+test('page omits the show header', () => {
+  assert.doesNotMatch(indexHtml, /show__header/);
+  assert.doesNotMatch(indexHtml, /show-title/);
+  assert.doesNotMatch(indexHtml, /<h1\b/);
+});
 
-  assert.ok(h1Block, 'expected a top-level h1 style block');
-  assert.match(h1Block, /white-space:\s*nowrap/);
-  assert.doesNotMatch(h1Block, /max-width/);
+test('content stack is anchored bottom right', () => {
+  const contentBlock = stylesCss.match(/\.content\s*{(?<body>[^}]*)}/)?.groups.body;
+  const showBlock = stylesCss.match(/\.show\s*{(?<body>[^}]*)}/)?.groups.body;
+  const creditBlock = stylesCss.match(/\.credit\s*{(?<body>[^}]*)}/)?.groups.body;
+
+  assert.ok(contentBlock, 'expected a .content style block');
+  assert.match(contentBlock, /align-content:\s*end/);
+  assert.match(contentBlock, /justify-items:\s*end/);
+  assert.ok(showBlock, 'expected a .show style block');
+  assert.match(showBlock, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.ok(creditBlock, 'expected a .credit style block');
+  assert.match(creditBlock, /text-align:\s*right/);
 });
