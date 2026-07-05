@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "node --test scripts/*.test.mjs",
+    "transcripts:dry-run": "node scripts/transcribe-elevenlabs.mjs --dry-run",
+    "transcripts:generate": "node scripts/transcribe-elevenlabs.mjs",
+    "transcripts:validate": "node scripts/transcribe-elevenlabs.mjs --validate"
+  },
+  "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.56.0"
+  }
+}

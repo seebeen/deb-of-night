@@ -6,3 +6,6 @@
 
 # Local git worktrees
 .worktrees/
+
+# Node dependencies
+node_modules/
