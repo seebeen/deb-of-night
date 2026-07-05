@@ -8,6 +8,8 @@ const stylesCss = await readFile(new URL('../src/styles.css', import.meta.url), 
 const faviconSvg = await readTextIfExists('../public/favicon.svg');
 const robotsTxt = await readTextIfExists('../public/robots.txt');
 const sitemapXml = await readTextIfExists('../public/sitemap.xml');
+const originalDescription =
+  "The Deb of Night is a minor character in Vampire: The Masquerade - Bloodlines. She is a sassy late-night broadcast hostess on KTRK, and can be heard on the radio in the fledgling's haven and at various other locations throughout the city.";
 
 async function readTextIfExists(path) {
   try {
@@ -58,6 +60,9 @@ test('transcript panel is a clear disclosure control', () => {
 });
 
 test('page exposes favicon and complete social metadata', () => {
+  assert.match(indexHtml, new RegExp(`<meta name="description" content="${escapeRegExp(originalDescription)}">`));
+  assert.match(indexHtml, new RegExp(`<meta property="og:description" content="${escapeRegExp(originalDescription)}">`));
+  assert.match(indexHtml, new RegExp(`<meta name="twitter:description" content="${escapeRegExp(originalDescription)}">`));
   assert.match(indexHtml, /<link rel="icon" type="image\/svg\+xml" href="\/favicon\.svg">/);
   assert.match(indexHtml, /<link rel="canonical" href="https:\/\/debofnight\.com\/">/);
   assert.match(indexHtml, /<meta name="robots" content="index, follow">/);
@@ -75,6 +80,10 @@ test('page exposes favicon and complete social metadata', () => {
   assert.match(robotsTxt, /Sitemap: https:\/\/debofnight\.com\/sitemap\.xml/);
   assert.match(sitemapXml, /<loc>https:\/\/debofnight\.com\/<\/loc>/);
 });
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 test('image layers use the original top-left composition', () => {
   const backgroundBlock = stylesCss.match(/\.background\s*{(?<body>[^}]*)}/)?.groups.body;
