@@ -15,7 +15,6 @@ const elements = {
   next: document.querySelector('[data-next]'),
   trackStatus: document.querySelector('[data-track-status]'),
   transcriptMeta: document.querySelector('[data-transcript-meta]'),
-  lyrics: document.querySelector('[data-lyrics]'),
   transcriptList: document.querySelector('[data-transcript-list]'),
   rain: document.querySelector('.rain'),
 };
@@ -91,7 +90,6 @@ async function selectTrack(index, { autoplay = false } = {}) {
 
   elements.trackStatus.textContent = track.title;
   elements.transcriptMeta.textContent = 'Loading...';
-  elements.lyrics.textContent = '';
   elements.transcriptList.textContent = '';
   updatePlaylistSelection();
 
@@ -198,24 +196,6 @@ function updateActiveSegment(currentTime) {
   current?.scrollIntoView({ block: 'nearest' });
 
   state.activeSegmentIndex = segment.index;
-  renderLyrics(segment);
-}
-
-function renderLyrics(segment) {
-  const segments = state.transcript?.segments || [];
-  const visible = [segments[segment.index - 1], segment, segments[segment.index + 1]].filter(Boolean);
-
-  elements.lyrics.replaceChildren(
-    ...visible.map((item) => {
-      const line = document.createElement('p');
-      const speaker = getDisplaySpeakerLabel(item.speakerLabel);
-
-      line.className = item.index === segment.index ? 'lyrics__line is-active' : 'lyrics__line';
-      line.textContent = speaker ? `${speaker}: ${item.text}` : item.text;
-
-      return line;
-    }),
-  );
 }
 
 async function fetchJson(url) {
