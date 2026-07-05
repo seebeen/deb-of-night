@@ -2,12 +2,17 @@
   "name": "debofnight",
   "private": true,
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "node --test scripts/*.test.mjs",
     "transcripts:dry-run": "node scripts/transcribe-elevenlabs.mjs --dry-run",
     "transcripts:generate": "node scripts/transcribe-elevenlabs.mjs",
     "transcripts:validate": "node scripts/transcribe-elevenlabs.mjs --validate"
   },
   "dependencies": {
-    "@elevenlabs/elevenlabs-js": "^2.56.0"
+    "@elevenlabs/elevenlabs-js": "^2.56.0",
+    "plyr": "^3.8.4",
+    "vite": "^8.1.3"
   }
 }
