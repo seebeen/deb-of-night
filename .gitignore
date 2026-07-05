@@ -9,3 +9,6 @@
 
 # Node dependencies
 node_modules/
+
+# Vite build output
+dist/

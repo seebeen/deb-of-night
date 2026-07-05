@@ -20,9 +20,10 @@ import {
 const execFileAsync = promisify(execFile);
 
 const ROOT = process.cwd();
-const AUDIO_DIR = path.join(ROOT, 'audio');
+const PUBLIC_DIR = path.join(ROOT, 'public');
+const AUDIO_DIR = path.join(PUBLIC_DIR, 'audio');
 const RAW_DIR = path.join(ROOT, 'data/elevenlabs/raw');
-const TRANSCRIPT_DIR = path.join(ROOT, 'assets/data/transcripts');
+const TRANSCRIPT_DIR = path.join(PUBLIC_DIR, 'assets/data/transcripts');
 
 const KEYTERMS = [
   'Deb of Night',
@@ -183,8 +184,8 @@ async function validateGeneratedFiles() {
   }
 
   for (const track of manifest.tracks) {
-    const transcriptPath = path.join(ROOT, track.transcriptSrc);
-    const captionsPath = path.join(ROOT, track.captionsSrc);
+    const transcriptPath = path.join(PUBLIC_DIR, track.transcriptSrc);
+    const captionsPath = path.join(PUBLIC_DIR, track.captionsSrc);
     const rawPath = rawOutputPath(track.id);
 
     await stat(rawPath);

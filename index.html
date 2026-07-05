@@ -1,68 +1,70 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Deb of Night | Vampire the Masquerade - Bloodlines</title>
+    <meta name="description" content="The Deb of Night is a minor character in Vampire: The Masquerade - Bloodlines. She is a sassy late-night broadcast hostess on KTRK, and can be heard on the radio in the fledgling's haven and at various other locations throughout the city. ">
 
-	<title>The Deb of Night | Vampire the Masquerade - Bloodlines</title>
-	<meta name="description" content="The Deb of Night is a minor character in Vampire: The Masquerade – Bloodlines. She is a sassy late-night broadcast hostess on KTRK, and can be heard on the radio in the fledgling's haven and at various other locations throughout the city. ">
-
-	<meta property="og:title" content="The Deb of Night | Vampire the Masquerade - Bloodlines">
-	<meta property="og:site_name" content="The Deb of Night">
-	<meta property="og:url" content="https://debofnight.com">
-	<meta property="og:description" content="The Deb of Night is a minor character in Vampire: The Masquerade – Bloodlines. She is a sassy late-night broadcast hostess on KTRK, and can be heard on the radio in the fledgling's haven and at various other locations throughout the city.">
-	<meta property="og:type" content="article">
-	<meta property="og:image" content="/assets/img/fb.jpg">
+    <meta property="og:title" content="The Deb of Night | Vampire the Masquerade - Bloodlines">
+    <meta property="og:site_name" content="The Deb of Night">
+    <meta property="og:url" content="https://debofnight.com">
+    <meta property="og:description" content="The Deb of Night is a minor character in Vampire: The Masquerade - Bloodlines. She is a sassy late-night broadcast hostess on KTRK, and can be heard on the radio in the fledgling's haven and at various other locations throughout the city.">
+    <meta property="og:type" content="article">
+    <meta property="og:image" content="/assets/img/fb.jpg">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono&display=swap" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="assets/css/vendor.min.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/main.min.css" />
+  </head>
+  <body>
+    <div class="scale background" aria-hidden="true"></div>
+    <div class="scale rain" aria-hidden="true"></div>
+    <div class="scale foreground" aria-hidden="true"></div>
 
-</head>
+    <main class="content">
+      <section class="show" aria-labelledby="show-title">
+        <div class="show__header">
+          <p class="station">KTRK Los Angeles</p>
+          <h1 id="show-title">The Deb of Night</h1>
+          <p class="tagline">Vampire: The Masquerade - Bloodlines radio loops</p>
+        </div>
 
-<body>
+        <div class="player-shell">
+          <audio id="player" controls crossorigin playsinline></audio>
+          <div class="track-controls" aria-label="Playlist controls">
+            <button class="icon-button" type="button" data-previous aria-label="Previous track">&lsaquo;</button>
+            <div class="track-status" data-track-status>Loading...</div>
+            <button class="icon-button" type="button" data-next aria-label="Next track">&rsaquo;</button>
+          </div>
+          <div class="playlist" data-playlist aria-label="Tracks"></div>
+        </div>
 
-	<div class="scale background">
-	</div>
+        <section class="transcript" aria-labelledby="transcript-title">
+          <div class="transcript__header">
+            <h2 id="transcript-title">Transcript</h2>
+            <span data-transcript-meta></span>
+          </div>
+          <div class="lyrics" data-lyrics aria-live="polite"></div>
+          <div class="transcript-list" data-transcript-list></div>
+        </section>
+      </section>
 
-	<div class="scale rain">
-	</div>
+      <div class="credit">
+        now go buy <a href="http://store.steampowered.com/app/2600/">vampire: the masquerade - bloodlines</a>
+      </div>
+    </main>
 
-	<div class="scale foreground">
-	</div>
+    <script type="module" src="/src/main.js"></script>
 
-	<div class="content">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-140789866-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-		<div class="player">
-            <audio class="mediaElementPlaylist" data-showplaylist="true" preload="none" controls>
-            	<source src="audio/radio_loop_1.mp3" type="audio/mp3" title="The Deb of Night #1" data-mep-description="Vigo, Gomez">
-        		<source src="audio/radio_loop_2.mp3" type="audio/mp3" title="The Deb of Night #2" data-mep-description="">
-    			<source src="audio/radio_loop_3.mp3" type="audio/mp3" title="The Deb of Night #3" data-mep-description="">
-				<source src="audio/radio_loop_4.mp3" type="audio/mp3" title="The Deb of Night #4" data-mep-description="">
-				<source src="audio/radio_loop_5.mp3" type="audio/mp3" title="The Deb of Night #5" data-mep-description="">
-            </audio>	
-		</div>
-
-		<div class="credit">
-			now go buy <a href="http://store.steampowered.com/app/2600/">vampire: the masquerade - bloodlines</a>
-		</div>
-
-	</div>
-
-	<script type="text/javascript" src="assets/js/vendor.min.js"></script>
-	<script type="text/javascript" src="assets/js/main.min.js"></script>
-
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-140789866-1"></script>
-	<script>
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-
-	gtag('config', 'UA-140789866-1');
-	</script>
-
-	
-</body>
-
+      gtag('config', 'UA-140789866-1');
+    </script>
+  </body>
 </html>
