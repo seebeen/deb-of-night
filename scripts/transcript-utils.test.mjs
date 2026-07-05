@@ -226,6 +226,7 @@ test('buildManifest summarizes transcript tracks', () => {
       duration: 426.370667,
       sha256: 'abc123',
       language: 'en',
+      callerNames: ['Vigo', 'Gomez'],
       text: 'Good evening.',
       words: [{ index: 0, text: 'Good', start: 0, end: 0.2, type: 'word' }],
       segments: [{ index: 0, start: 0, end: 0.8, text: 'Good evening.', wordStart: 0, wordEnd: 0 }],
@@ -241,6 +242,7 @@ test('buildManifest summarizes transcript tracks', () => {
     duration: 426.370667,
     sha256: 'abc123',
     language: 'en',
+    callerNames: ['Vigo', 'Gomez'],
     wordCount: 1,
     segmentCount: 1,
   });

@@ -69,6 +69,14 @@ const TRANSCRIPTION_OPTIONS = {
   keyterms: KEYTERMS,
 };
 
+const CALLER_NAMES_BY_TRACK_ID = {
+  radio_loop_1: ['Vigo', 'Gomez'],
+  radio_loop_2: ['Greg', 'Senator'],
+  radio_loop_3: ['Roger'],
+  radio_loop_4: ['Gomez'],
+  radio_loop_5: ['Grandpa', 'Frankenstein', 'Gomez'],
+};
+
 const flags = new Set(process.argv.slice(2));
 
 async function main() {
@@ -147,6 +155,7 @@ export async function discoverTracks() {
         duration,
         sha256,
         language: 'en',
+        callerNames: CALLER_NAMES_BY_TRACK_ID[id] || [],
       };
     }),
   );

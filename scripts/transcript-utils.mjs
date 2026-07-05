@@ -57,6 +57,10 @@ export function normalizeTranscript(raw, track) {
     segments: buildSegments(words),
   };
 
+  if (Array.isArray(track.callerNames) && track.callerNames.length > 0) {
+    normalized.callerNames = [...track.callerNames];
+  }
+
   validateNormalizedTranscript(normalized);
 
   return normalized;
@@ -225,6 +229,9 @@ export function buildManifest(transcripts) {
       duration: transcript.duration,
       sha256: transcript.sha256,
       language: transcript.language,
+      ...(Array.isArray(transcript.callerNames) && transcript.callerNames.length > 0
+        ? { callerNames: transcript.callerNames }
+        : {}),
       wordCount: transcript.words.length,
       segmentCount: transcript.segments.length,
     })),

@@ -10,6 +10,13 @@ export function normalizeTrackUrl(url) {
   return url.startsWith('/') ? url : `/${url}`;
 }
 
+export function getTrackDisplayTitle(track) {
+  const title = track?.title || '';
+  const callerNames = Array.isArray(track?.callerNames) ? track.callerNames.filter(Boolean) : [];
+
+  return callerNames.length > 0 ? `${title} - ${callerNames.join(', ')}` : title;
+}
+
 export function getWrappedTrackIndex(currentIndex, offset, trackCount) {
   if (!Number.isInteger(trackCount) || trackCount <= 0) {
     return -1;

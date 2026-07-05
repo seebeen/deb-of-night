@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getWrappedTrackIndex, normalizeTrackUrl } from '../src/playlist.js';
+import { getTrackDisplayTitle, getWrappedTrackIndex, normalizeTrackUrl } from '../src/playlist.js';
 import { createRainPosition } from '../src/rain.js';
 import { findActiveSegment, getDisplaySpeakerLabel } from '../src/transcript.js';
 
@@ -36,6 +36,17 @@ test('normalizeTrackUrl preserves absolute public URLs and anchors relative path
     normalizeTrackUrl('https://cdn.example.test/radio_loop_1.mp3'),
     'https://cdn.example.test/radio_loop_1.mp3',
   );
+});
+
+test('getTrackDisplayTitle appends caller names after the loop number', () => {
+  assert.equal(
+    getTrackDisplayTitle({
+      title: 'The Deb of Night #1',
+      callerNames: ['Vigo', 'Gomez'],
+    }),
+    'The Deb of Night #1 - Vigo, Gomez',
+  );
+  assert.equal(getTrackDisplayTitle({ title: 'The Deb of Night #3', callerNames: [] }), 'The Deb of Night #3');
 });
 
 test('getWrappedTrackIndex wraps previous and next indices through the playlist length', () => {

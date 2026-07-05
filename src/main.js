@@ -1,7 +1,7 @@
 import 'plyr/dist/plyr.css';
 import Plyr from 'plyr';
 
-import { getNextTrackIndex, getPreviousTrackIndex, normalizeTrackUrl } from './playlist.js';
+import { getNextTrackIndex, getPreviousTrackIndex, getTrackDisplayTitle, normalizeTrackUrl } from './playlist.js';
 import { startRainJitter } from './rain.js';
 import { findActiveSegment, getDisplaySpeakerLabel } from './transcript.js';
 import './styles.css';
@@ -88,14 +88,16 @@ async function selectTrack(index, { autoplay = false } = {}) {
   state.activeSegmentIndex = -1;
   state.segmentButtons.clear();
 
-  elements.trackStatus.textContent = track.title;
+  const displayTitle = getTrackDisplayTitle(track);
+
+  elements.trackStatus.textContent = displayTitle;
   elements.transcriptMeta.textContent = 'Loading...';
   elements.transcriptList.textContent = '';
   updatePlaylistSelection();
 
   player.source = {
     type: 'audio',
-    title: track.title,
+    title: displayTitle,
     sources: [
       {
         src: track.audioSrc,
@@ -130,7 +132,7 @@ function renderPlaylist() {
       button.type = 'button';
       button.className = 'playlist__item';
       button.dataset.trackIndex = String(index);
-      button.innerHTML = `<span>${escapeHtml(track.title)}</span><small>${formatDuration(track.duration)}</small>`;
+      button.innerHTML = `<span>${escapeHtml(getTrackDisplayTitle(track))}</span><small>${formatDuration(track.duration)}</small>`;
       button.addEventListener('click', () => {
         selectTrack(index, { autoplay: player.playing });
       });
