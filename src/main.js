@@ -14,6 +14,7 @@ const elements = {
   previous: document.querySelector('[data-previous]'),
   next: document.querySelector('[data-next]'),
   trackStatus: document.querySelector('[data-track-status]'),
+  transcriptDetails: document.querySelector('[data-transcript-details]'),
   transcriptMeta: document.querySelector('[data-transcript-meta]'),
   transcriptList: document.querySelector('[data-transcript-list]'),
   rain: document.querySelector('.rain'),
@@ -73,6 +74,14 @@ function bindControls() {
 
   player.on('timeupdate', () => {
     updateActiveSegment(player.currentTime);
+  });
+
+  elements.transcriptDetails.addEventListener('toggle', () => {
+    if (!elements.transcriptDetails.open || state.activeSegmentIndex < 0) {
+      return;
+    }
+
+    state.segmentButtons.get(state.activeSegmentIndex)?.scrollIntoView({ block: 'nearest' });
   });
 }
 
@@ -195,7 +204,10 @@ function updateActiveSegment(currentTime) {
 
   const current = state.segmentButtons.get(segment.index);
   current?.classList.add('is-active');
-  current?.scrollIntoView({ block: 'nearest' });
+
+  if (elements.transcriptDetails.open) {
+    current?.scrollIntoView({ block: 'nearest' });
+  }
 
   state.activeSegmentIndex = segment.index;
 }

@@ -5,6 +5,21 @@ import test from 'node:test';
 const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const mainJs = await readFile(new URL('../src/main.js', import.meta.url), 'utf8');
 const stylesCss = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8');
+const faviconSvg = await readTextIfExists('../public/favicon.svg');
+const robotsTxt = await readTextIfExists('../public/robots.txt');
+const sitemapXml = await readTextIfExists('../public/sitemap.xml');
+
+async function readTextIfExists(path) {
+  try {
+    return await readFile(new URL(path, import.meta.url), 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return '';
+    }
+
+    throw error;
+  }
+}
 
 test('transcript renders through one text surface', () => {
   assert.match(indexHtml, /data-transcript-list/);
@@ -31,4 +46,42 @@ test('content stack is anchored bottom right', () => {
   assert.match(showBlock, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
   assert.ok(creditBlock, 'expected a .credit style block');
   assert.match(creditBlock, /text-align:\s*right/);
+});
+
+test('transcript panel is a clear disclosure control', () => {
+  assert.match(indexHtml, /<details class="transcript"[^>]*data-transcript-details[^>]*open>/);
+  assert.match(indexHtml, /<summary class="transcript__header"/);
+  assert.match(indexHtml, /Hide transcript/);
+  assert.match(indexHtml, /Show transcript/);
+  assert.match(stylesCss, /\.transcript\[open\]/);
+  assert.match(stylesCss, /\.transcript:not\(\[open\]\)/);
+});
+
+test('page exposes favicon and complete social metadata', () => {
+  assert.match(indexHtml, /<link rel="icon" type="image\/svg\+xml" href="\/favicon\.svg">/);
+  assert.match(indexHtml, /<link rel="canonical" href="https:\/\/debofnight\.com\/">/);
+  assert.match(indexHtml, /<meta name="robots" content="index, follow">/);
+  assert.match(indexHtml, /<meta property="og:type" content="website">/);
+  assert.match(indexHtml, /<meta property="og:url" content="https:\/\/debofnight\.com\/">/);
+  assert.match(indexHtml, /<meta property="og:image" content="https:\/\/debofnight\.com\/assets\/img\/fb\.jpg">/);
+  assert.match(indexHtml, /<meta property="og:image:width" content="1280">/);
+  assert.match(indexHtml, /<meta property="og:image:height" content="720">/);
+  assert.match(indexHtml, /<meta property="og:image:alt" content="The Deb of Night radio archive">/);
+  assert.match(indexHtml, /<meta name="twitter:card" content="summary_large_image">/);
+  assert.match(indexHtml, /<meta name="twitter:image" content="https:\/\/debofnight\.com\/assets\/img\/fb\.jpg">/);
+
+  assert.match(faviconSvg, /<svg\b/);
+  assert.match(robotsTxt, /Allow: \//);
+  assert.match(robotsTxt, /Sitemap: https:\/\/debofnight\.com\/sitemap\.xml/);
+  assert.match(sitemapXml, /<loc>https:\/\/debofnight\.com\/<\/loc>/);
+});
+
+test('image layers use the original top-left composition', () => {
+  const backgroundBlock = stylesCss.match(/\.background\s*{(?<body>[^}]*)}/)?.groups.body;
+  const foregroundBlock = stylesCss.match(/\.foreground\s*{(?<body>[^}]*)}/)?.groups.body;
+
+  assert.ok(backgroundBlock, 'expected a .background style block');
+  assert.match(backgroundBlock, /left top \/ cover no-repeat/);
+  assert.ok(foregroundBlock, 'expected a .foreground style block');
+  assert.match(foregroundBlock, /left top \/ cover no-repeat/);
 });

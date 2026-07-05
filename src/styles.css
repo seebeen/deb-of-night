@@ -48,7 +48,7 @@ a {
 
 .background {
   z-index: 0;
-  background: url("/assets/img/background.jpg") center / cover no-repeat;
+  background: url("/assets/img/background.jpg") left top / cover no-repeat;
 }
 
 .background::after {
@@ -67,7 +67,7 @@ a {
 
 .foreground {
   z-index: 2;
-  background: url("/assets/img/foreground.png") center bottom / cover no-repeat;
+  background: url("/assets/img/foreground.png") left top / cover no-repeat;
 }
 
 .content {
@@ -180,9 +180,16 @@ h2 {
 }
 
 .transcript {
-  display: grid;
   overflow: hidden;
+}
+
+.transcript[open] {
+  display: grid;
   grid-template-rows: auto minmax(10rem, 26vh);
+}
+
+.transcript:not([open]) .transcript-list {
+  display: none;
 }
 
 .transcript__header {
@@ -190,8 +197,58 @@ h2 {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.9rem 1rem;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 0;
   color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.transcript__header::-webkit-details-marker {
+  display: none;
+}
+
+.transcript[open] .transcript__header {
+  border-bottom: 1px solid var(--line);
+}
+
+.transcript__header:hover,
+.transcript__header:focus-visible {
+  color: var(--ink);
+  outline: none;
+}
+
+.transcript__header::after {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  border: solid var(--gold);
+  border-width: 0 2px 2px 0;
+  content: "";
+  transform: rotate(-45deg);
+}
+
+.transcript[open] .transcript__header::after {
+  transform: rotate(45deg);
+}
+
+.transcript__summary {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: end;
+  gap: 0.75rem;
+  text-align: right;
+}
+
+.transcript__toggle {
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.transcript[open] .transcript__toggle--closed,
+.transcript:not([open]) .transcript__toggle--open,
+.transcript:not([open]) [data-transcript-meta] {
+  display: none;
 }
 
 .transcript-list {
@@ -253,6 +310,10 @@ h2 {
 
   .transcript {
     grid-template-rows: auto minmax(10rem, 32vh);
+  }
+
+  .transcript__summary {
+    flex-wrap: wrap;
   }
 }
 
