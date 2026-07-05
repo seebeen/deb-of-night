@@ -1,5 +1,3 @@
-const GENERIC_SPEAKER_LABEL = /^speaker\s+\d+$/i;
-
 export function findActiveSegment(segments, currentTime) {
   if (!Array.isArray(segments) || segments.length === 0) {
     return null;
@@ -25,11 +23,5 @@ export function findActiveSegment(segments, currentTime) {
 }
 
 export function getDisplaySpeakerLabel(label) {
-  const normalized = String(label || '').trim();
-
-  if (!normalized || GENERIC_SPEAKER_LABEL.test(normalized)) {
-    return '';
-  }
-
-  return normalized;
+  return '';
 }

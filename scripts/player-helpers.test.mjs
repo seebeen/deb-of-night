@@ -22,11 +22,11 @@ test('findActiveSegment returns null when no segments are available', () => {
   assert.equal(findActiveSegment([], 12), null);
 });
 
-test('getDisplaySpeakerLabel hides generic diarization labels', () => {
+test('getDisplaySpeakerLabel hides all transcript speaker labels', () => {
   assert.equal(getDisplaySpeakerLabel('Speaker 1'), '');
   assert.equal(getDisplaySpeakerLabel('speaker 27'), '');
-  assert.equal(getDisplaySpeakerLabel('Deb'), 'Deb');
-  assert.equal(getDisplaySpeakerLabel('Caller 2'), 'Caller 2');
+  assert.equal(getDisplaySpeakerLabel('Deb'), '');
+  assert.equal(getDisplaySpeakerLabel('Caller 2'), '');
 });
 
 test('normalizeTrackUrl preserves absolute public URLs and anchors relative paths to the site root', () => {
