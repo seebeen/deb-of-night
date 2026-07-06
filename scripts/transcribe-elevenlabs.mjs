@@ -71,7 +71,7 @@ const TRANSCRIPTION_OPTIONS = {
 
 const CALLER_NAMES_BY_TRACK_ID = {
   radio_loop_1: ['Vigo', 'Gomez'],
-  radio_loop_2: ['Greg', 'Senator'],
+  radio_loop_2: ['Greg', 'Andrei'],
   radio_loop_3: ['Roger'],
   radio_loop_4: ['Gomez'],
   radio_loop_5: ['Grandpa', 'Frankenstein', 'Gomez'],
