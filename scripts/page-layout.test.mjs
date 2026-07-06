@@ -51,12 +51,21 @@ test('content stack is anchored bottom right', () => {
 });
 
 test('transcript panel is a clear disclosure control', () => {
-  assert.match(indexHtml, /<details class="transcript"[^>]*data-transcript-details[^>]*open>/);
+  assert.match(indexHtml, /<details class="transcript"[^>]*data-transcript-details>/);
+  assert.doesNotMatch(indexHtml, /<details class="transcript"[^>]*data-transcript-details[^>]*open>/);
   assert.match(indexHtml, /<summary class="transcript__header"/);
   assert.match(indexHtml, /Hide transcript/);
   assert.match(indexHtml, /Show transcript/);
   assert.match(stylesCss, /\.transcript\[open\]/);
   assert.match(stylesCss, /\.transcript:not\(\[open\]\)/);
+});
+
+test('transcript visibility persists in localStorage', () => {
+  assert.match(mainJs, /const TRANSCRIPT_OPEN_STORAGE_KEY = 'debofnight:transcript-open'/);
+  assert.match(mainJs, /restoreTranscriptOpenState\(\)/);
+  assert.match(mainJs, /persistTranscriptOpenState\(\)/);
+  assert.match(mainJs, /localStorage\.getItem\(TRANSCRIPT_OPEN_STORAGE_KEY\)/);
+  assert.match(mainJs, /localStorage\.setItem\(TRANSCRIPT_OPEN_STORAGE_KEY, String\(elements\.transcriptDetails\.open\)\)/);
 });
 
 test('transcript auto-follows only during playback', () => {

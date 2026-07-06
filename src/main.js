@@ -7,6 +7,7 @@ import { findActiveSegment, getDisplaySpeakerLabel } from './transcript.js';
 import './styles.css';
 
 const MANIFEST_URL = '/assets/data/transcripts/manifest.json';
+const TRANSCRIPT_OPEN_STORAGE_KEY = 'debofnight:transcript-open';
 
 const elements = {
   audio: document.querySelector('#player'),
@@ -41,6 +42,8 @@ startRainJitter(elements.rain);
 init();
 
 async function init() {
+  restoreTranscriptOpenState();
+
   try {
     const manifest = await fetchJson(MANIFEST_URL);
     state.tracks = manifest.tracks.map((track) => ({
@@ -77,6 +80,8 @@ function bindControls() {
   });
 
   elements.transcriptDetails.addEventListener('toggle', () => {
+    persistTranscriptOpenState();
+
     if (!shouldAutoFollowTranscript() || state.activeSegmentIndex < 0) {
       return;
     }
@@ -218,6 +223,28 @@ function shouldAutoFollowTranscript() {
 
 function scrollTranscriptSegmentIntoView(segmentIndex) {
   state.segmentButtons.get(segmentIndex)?.scrollIntoView({ block: 'nearest' });
+}
+
+function restoreTranscriptOpenState() {
+  try {
+    const storedOpenState = localStorage.getItem(TRANSCRIPT_OPEN_STORAGE_KEY);
+
+    if (storedOpenState === null) {
+      return;
+    }
+
+    elements.transcriptDetails.open = storedOpenState === 'true';
+  } catch {
+    // Ignore storage failures so the transcript can still use its default state.
+  }
+}
+
+function persistTranscriptOpenState() {
+  try {
+    localStorage.setItem(TRANSCRIPT_OPEN_STORAGE_KEY, String(elements.transcriptDetails.open));
+  } catch {
+    // Ignore storage failures; the disclosure still works for the current page.
+  }
 }
 
 async function fetchJson(url) {
