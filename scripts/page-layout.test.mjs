@@ -6,6 +6,7 @@ const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf
 const mainJs = await readFile(new URL('../src/main.js', import.meta.url), 'utf8');
 const stylesCss = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8');
 const faviconSvg = await readTextIfExists('../public/favicon.svg');
+const faviconIco = await readBinaryIfExists('../public/favicon.ico');
 const robotsTxt = await readTextIfExists('../public/robots.txt');
 const sitemapXml = await readTextIfExists('../public/sitemap.xml');
 const originalDescription =
@@ -17,6 +18,18 @@ async function readTextIfExists(path) {
   } catch (error) {
     if (error.code === 'ENOENT') {
       return '';
+    }
+
+    throw error;
+  }
+}
+
+async function readBinaryIfExists(path) {
+  try {
+    return await readFile(new URL(path, import.meta.url));
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return Buffer.alloc(0);
     }
 
     throw error;
@@ -138,6 +151,7 @@ test('page exposes favicon and complete social metadata', () => {
   assert.match(indexHtml, new RegExp(`<meta name="description" content="${escapeRegExp(originalDescription)}">`));
   assert.match(indexHtml, new RegExp(`<meta property="og:description" content="${escapeRegExp(originalDescription)}">`));
   assert.match(indexHtml, new RegExp(`<meta name="twitter:description" content="${escapeRegExp(originalDescription)}">`));
+  assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any">/);
   assert.match(indexHtml, /<link rel="icon" type="image\/svg\+xml" href="\/favicon\.svg">/);
   assert.match(indexHtml, /<link rel="canonical" href="https:\/\/debofnight\.com\/">/);
   assert.match(indexHtml, /<meta name="robots" content="index, follow">/);
@@ -151,6 +165,7 @@ test('page exposes favicon and complete social metadata', () => {
   assert.match(indexHtml, /<meta name="twitter:image" content="https:\/\/debofnight\.com\/assets\/img\/fb\.jpg">/);
 
   assert.match(faviconSvg, /<svg\b/);
+  assert.ok(faviconIco.length > 0, 'expected a favicon.ico fallback');
   assert.match(robotsTxt, /Allow: \//);
   assert.match(robotsTxt, /Sitemap: https:\/\/debofnight\.com\/sitemap\.xml/);
   assert.match(sitemapXml, /<loc>https:\/\/debofnight\.com\/<\/loc>/);
