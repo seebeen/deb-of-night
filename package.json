@@ -6,6 +6,7 @@
     "run": "vite --host 127.0.0.1 --port 4173",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "release": "semantic-release",
     "test": "node --test scripts/*.test.mjs",
     "transcripts:dry-run": "node scripts/transcribe-elevenlabs.mjs --dry-run",
     "transcripts:generate": "node scripts/transcribe-elevenlabs.mjs",
@@ -15,5 +16,8 @@
     "@elevenlabs/elevenlabs-js": "^2.56.0",
     "plyr": "^3.8.4",
     "vite": "^8.1.3"
+  },
+  "devDependencies": {
+    "semantic-release": "^24.2.9"
   }
 }
