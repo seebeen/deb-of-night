@@ -50,6 +50,41 @@ test('content stack is anchored bottom right', () => {
   assert.match(creditBlock, /text-align:\s*right/);
 });
 
+test('player shell renders title, player, then playlist without skip controls', () => {
+  const playerShell = indexHtml.match(/<div class="player-shell">(?<body>[\s\S]*?)<\/div>\s*<details class="transcript"/)?.groups.body;
+
+  assert.ok(playerShell, 'expected player shell markup');
+  assert.match(playerShell, /<div class="track-status" data-track-status>Loading\.\.\.<\/div>\s*<audio id="player"/);
+  assert.match(playerShell, /<\/audio>\s*<div class="playlist" data-playlist aria-label="Tracks"><\/div>/);
+  assert.doesNotMatch(indexHtml, /data-previous/);
+  assert.doesNotMatch(indexHtml, /data-next/);
+  assert.doesNotMatch(indexHtml, /track-controls/);
+  assert.doesNotMatch(mainJs, /previous:\s*document\.querySelector/);
+  assert.doesNotMatch(mainJs, /next:\s*document\.querySelector/);
+  assert.doesNotMatch(mainJs, /getPreviousTrackIndex/);
+});
+
+test('player omits visible time and playlist durations', () => {
+  assert.doesNotMatch(mainJs, /current-time/);
+  assert.doesNotMatch(mainJs, /duration/);
+  assert.doesNotMatch(mainJs, /formatDuration/);
+  assert.doesNotMatch(mainJs, /<small>\$\{formatDuration\(track\.duration\)\}<\/small>/);
+});
+
+test('player panel is slightly larger', () => {
+  const showBlock = getStyleBlock('.show');
+  const playerShellBlock = getStyleBlock('.player-shell');
+  const plyrBlock = getStyleBlock('.plyr');
+
+  assert.ok(showBlock, 'expected a .show style block');
+  assert.match(showBlock, /width:\s*min\(46rem,\s*100%\)/);
+  assert.ok(playerShellBlock, 'expected a .player-shell style block');
+  assert.match(playerShellBlock, /padding:\s*1\.25rem/);
+  assert.match(playerShellBlock, /gap:\s*1rem/);
+  assert.ok(plyrBlock, 'expected a .plyr style block');
+  assert.match(plyrBlock, /font-size:\s*1\.05rem/);
+});
+
 test('transcript panel is a clear disclosure control', () => {
   assert.match(indexHtml, /<details class="transcript"[^>]*data-transcript-details>/);
   assert.doesNotMatch(indexHtml, /<details class="transcript"[^>]*data-transcript-details[^>]*open>/);
@@ -78,6 +113,8 @@ test('transcript heading stays visible above a manually scrollable list', () => 
   const transcriptBlock = getStyleBlock('.transcript');
   const headerBlock = getStyleBlock('.transcript__header');
   const listBlock = getStyleBlock('.transcript-list');
+  const scrollbarBlock = getStyleBlock('.transcript-list::-webkit-scrollbar');
+  const scrollbarThumbBlock = getStyleBlock('.transcript-list::-webkit-scrollbar-thumb');
 
   assert.ok(transcriptBlock, 'expected a .transcript style block');
   assert.match(transcriptBlock, /max-height:/);
@@ -88,6 +125,13 @@ test('transcript heading stays visible above a manually scrollable list', () => 
   assert.match(listBlock, /min-height:\s*0/);
   assert.match(listBlock, /overflow-y:\s*auto/);
   assert.match(listBlock, /overscroll-behavior:\s*contain/);
+  assert.match(listBlock, /scrollbar-color:\s*var\(--accent\) transparent/);
+  assert.match(listBlock, /scrollbar-width:\s*thin/);
+  assert.ok(scrollbarBlock, 'expected a webkit scrollbar style block');
+  assert.match(scrollbarBlock, /width:\s*0\.55rem/);
+  assert.ok(scrollbarThumbBlock, 'expected a webkit scrollbar thumb style block');
+  assert.match(scrollbarThumbBlock, /background:\s*linear-gradient/);
+  assert.match(scrollbarThumbBlock, /border-radius:\s*999px/);
 });
 
 test('page exposes favicon and complete social metadata', () => {

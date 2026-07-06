@@ -1,7 +1,7 @@
 import 'plyr/dist/plyr.css';
 import Plyr from 'plyr';
 
-import { getNextTrackIndex, getPreviousTrackIndex, getTrackDisplayTitle, normalizeTrackUrl } from './playlist.js';
+import { getNextTrackIndex, getTrackDisplayTitle, normalizeTrackUrl } from './playlist.js';
 import { startRainJitter } from './rain.js';
 import { findActiveSegment, getDisplaySpeakerLabel } from './transcript.js';
 import './styles.css';
@@ -12,8 +12,6 @@ const TRANSCRIPT_OPEN_STORAGE_KEY = 'debofnight:transcript-open';
 const elements = {
   audio: document.querySelector('#player'),
   playlist: document.querySelector('[data-playlist]'),
-  previous: document.querySelector('[data-previous]'),
-  next: document.querySelector('[data-next]'),
   trackStatus: document.querySelector('[data-track-status]'),
   transcriptDetails: document.querySelector('[data-transcript-details]'),
   transcriptMeta: document.querySelector('[data-transcript-meta]'),
@@ -30,7 +28,7 @@ const state = {
 };
 
 const player = new Plyr(elements.audio, {
-  controls: ['play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions'],
+  controls: ['play', 'progress', 'mute', 'volume', 'captions'],
   captions: {
     active: true,
     language: 'en',
@@ -63,14 +61,6 @@ async function init() {
 }
 
 function bindControls() {
-  elements.previous.addEventListener('click', () => {
-    selectTrack(getPreviousTrackIndex(state.currentIndex, state.tracks.length), { autoplay: player.playing });
-  });
-
-  elements.next.addEventListener('click', () => {
-    selectTrack(getNextTrackIndex(state.currentIndex, state.tracks.length), { autoplay: player.playing });
-  });
-
   player.on('ended', () => {
     selectTrack(getNextTrackIndex(state.currentIndex, state.tracks.length), { autoplay: true });
   });
@@ -146,7 +136,7 @@ function renderPlaylist() {
       button.type = 'button';
       button.className = 'playlist__item';
       button.dataset.trackIndex = String(index);
-      button.innerHTML = `<span>${escapeHtml(getTrackDisplayTitle(track))}</span><small>${formatDuration(track.duration)}</small>`;
+      button.innerHTML = `<span>${escapeHtml(getTrackDisplayTitle(track))}</span>`;
       button.addEventListener('click', () => {
         selectTrack(index, { autoplay: player.playing });
       });
@@ -255,14 +245,6 @@ async function fetchJson(url) {
   }
 
   return response.json();
-}
-
-function formatDuration(seconds) {
-  const total = Math.round(Number(seconds) || 0);
-  const minutes = Math.floor(total / 60);
-  const remainder = total % 60;
-
-  return `${minutes}:${String(remainder).padStart(2, '0')}`;
 }
 
 function formatClock(seconds) {
