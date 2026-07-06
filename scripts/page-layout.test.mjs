@@ -176,6 +176,7 @@ test('image layers use the original top-left composition', () => {
 
   assert.ok(backgroundBlock, 'expected a .background style block');
   assert.match(backgroundBlock, /left top \/ cover no-repeat/);
+  assert.doesNotMatch(stylesCss, /\.background::after/);
   assert.ok(foregroundBlock, 'expected a .foreground style block');
   assert.match(foregroundBlock, /left top \/ cover no-repeat/);
 });

@@ -51,15 +51,6 @@ a {
   background: url("/assets/img/background.jpg") left top / cover no-repeat;
 }
 
-.background::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background:
-    radial-gradient(circle at 50% 42%, rgb(86 0 0 / 20%), transparent 36rem),
-    linear-gradient(180deg, rgb(0 0 0 / 30%), rgb(0 0 0 / 86%));
-}
-
 .rain {
   z-index: 1;
   background-image: url("/assets/img/rain.png");
