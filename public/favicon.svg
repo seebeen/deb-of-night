@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="The Deb of Night">
+  <rect width="64" height="64" rx="10" fill="#050404"/>
+  <path d="M12 48h40v5H12z" fill="#d6b86a"/>
+  <path d="M18 15h14c10 0 17 7 17 17s-7 17-17 17H18zm10 9v16h4c5 0 8-3 8-8s-3-8-8-8z" fill="#f4f1e8"/>
+  <path d="M12 12h40v8H12z" fill="#b41f2a"/>
+</svg>

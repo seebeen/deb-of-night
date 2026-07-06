@@ -1,0 +1,14 @@
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+
+# Local git worktrees
+.worktrees/
+
+# Node dependencies
+node_modules/
+
+# Vite build output
+dist/
