@@ -30,6 +30,7 @@ test('release workflow builds, releases, and deploys pages from master', async (
   assert.match(workflow, /pages: write/);
   assert.match(workflow, /id-token: write/);
   assert.match(workflow, /uses: crazy-max\/ghaction-import-gpg@v7/);
+  assert.match(workflow, /token: \$\{\{ secrets\.OBLAKBOT_PAT \|\| github\.token \}\}/);
   assert.match(workflow, /gpg_private_key: \$\{\{ secrets\.OBLAKBOT_GPG_KEY \}\}/);
   assert.match(workflow, /passphrase: \$\{\{ secrets\.OBLAKBOT_GPG_PASS \}\}/);
   assert.match(workflow, /git_commit_gpgsign: true/);
@@ -39,7 +40,7 @@ test('release workflow builds, releases, and deploys pages from master', async (
   assert.match(workflow, /run: npm test/);
   assert.match(workflow, /run: npm run build/);
   assert.match(workflow, /uses: cycjimmy\/semantic-release-action@v4/);
-  assert.match(workflow, /GITHUB_TOKEN: \$\{\{ secrets\.OBLAKBOT_PAT \}\}/);
+  assert.match(workflow, /GITHUB_TOKEN: \$\{\{ secrets\.OBLAKBOT_PAT \|\| github\.token \}\}/);
   assert.match(workflow, /uses: actions\/upload-pages-artifact@v5/);
   assert.match(workflow, /uses: actions\/deploy-pages@v5/);
   assert.match(workflow, /path: dist/);

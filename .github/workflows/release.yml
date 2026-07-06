@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          token: ${{ secrets.OBLAKBOT_PAT }}
+          token: ${{ secrets.OBLAKBOT_PAT || github.token }}
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v7
@@ -61,7 +61,7 @@ jobs:
           GIT_AUTHOR_EMAIL: ${{ steps.gpg.outputs.email }}
           GIT_COMMITTER_NAME: ${{ steps.gpg.outputs.name }}
           GIT_COMMITTER_EMAIL: ${{ steps.gpg.outputs.email }}
-          GITHUB_TOKEN: ${{ secrets.OBLAKBOT_PAT }}
+          GITHUB_TOKEN: ${{ secrets.OBLAKBOT_PAT || github.token }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
