@@ -42,6 +42,7 @@ test('release workflow builds, releases, and deploys pages from master', async (
   assert.match(workflow, /git_commit_gpgsign: true/);
   assert.match(workflow, /git_tag_gpgsign: true/);
   assert.match(workflow, /node-version: 24/);
+  assert.match(workflow, /run: sudo apt-get update && sudo apt-get install -y ffmpeg/);
   assert.match(workflow, /run: npm audit signatures/);
   assert.match(workflow, /run: npm test/);
   assert.match(workflow, /run: npm run build/);
