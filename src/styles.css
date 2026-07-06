@@ -180,12 +180,13 @@ h2 {
 }
 
 .transcript {
+  max-height: min(38rem, calc(100vh - 2rem));
   overflow: hidden;
 }
 
 .transcript[open] {
   display: grid;
-  grid-template-rows: auto minmax(10rem, 26vh);
+  grid-template-rows: auto minmax(10rem, min(26rem, 26vh));
 }
 
 .transcript:not([open]) .transcript-list {
@@ -193,11 +194,15 @@ h2 {
 }
 
 .transcript__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   padding: 0.9rem 1rem;
   border-bottom: 0;
+  background: var(--panel);
   color: var(--muted);
   cursor: pointer;
   list-style: none;
@@ -252,7 +257,9 @@ h2 {
 }
 
 .transcript-list {
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0.55rem;
 }
 
@@ -308,8 +315,8 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .transcript {
-    grid-template-rows: auto minmax(10rem, 32vh);
+  .transcript[open] {
+    grid-template-rows: auto minmax(10rem, min(26rem, 32vh));
   }
 
   .transcript__summary {

@@ -59,6 +59,28 @@ test('transcript panel is a clear disclosure control', () => {
   assert.match(stylesCss, /\.transcript:not\(\[open\]\)/);
 });
 
+test('transcript auto-follows only during playback', () => {
+  assert.match(mainJs, /function shouldAutoFollowTranscript\(\)/);
+  assert.match(mainJs, /elements\.transcriptDetails\.open && player\.playing/);
+  assert.doesNotMatch(mainJs, /if \(elements\.transcriptDetails\.open\) \{\s*current\?\.scrollIntoView/s);
+});
+
+test('transcript heading stays visible above a manually scrollable list', () => {
+  const transcriptBlock = getStyleBlock('.transcript');
+  const headerBlock = getStyleBlock('.transcript__header');
+  const listBlock = getStyleBlock('.transcript-list');
+
+  assert.ok(transcriptBlock, 'expected a .transcript style block');
+  assert.match(transcriptBlock, /max-height:/);
+  assert.ok(headerBlock, 'expected a .transcript__header style block');
+  assert.match(headerBlock, /position:\s*sticky/);
+  assert.match(headerBlock, /top:\s*0/);
+  assert.ok(listBlock, 'expected a .transcript-list style block');
+  assert.match(listBlock, /min-height:\s*0/);
+  assert.match(listBlock, /overflow-y:\s*auto/);
+  assert.match(listBlock, /overscroll-behavior:\s*contain/);
+});
+
 test('page exposes favicon and complete social metadata', () => {
   assert.match(indexHtml, new RegExp(`<meta name="description" content="${escapeRegExp(originalDescription)}">`));
   assert.match(indexHtml, new RegExp(`<meta property="og:description" content="${escapeRegExp(originalDescription)}">`));
@@ -83,6 +105,16 @@ test('page exposes favicon and complete social metadata', () => {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getStyleBlock(selector) {
+  for (const match of stylesCss.matchAll(/(?<selector>[^{}]+)\s*{(?<body>[^}]*)}/g)) {
+    if (match.groups.selector.trim() === selector) {
+      return match.groups.body;
+    }
+  }
+
+  return null;
 }
 
 test('image layers use the original top-left composition', () => {

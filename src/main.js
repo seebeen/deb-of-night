@@ -77,11 +77,11 @@ function bindControls() {
   });
 
   elements.transcriptDetails.addEventListener('toggle', () => {
-    if (!elements.transcriptDetails.open || state.activeSegmentIndex < 0) {
+    if (!shouldAutoFollowTranscript() || state.activeSegmentIndex < 0) {
       return;
     }
 
-    state.segmentButtons.get(state.activeSegmentIndex)?.scrollIntoView({ block: 'nearest' });
+    scrollTranscriptSegmentIntoView(state.activeSegmentIndex);
   });
 }
 
@@ -205,11 +205,19 @@ function updateActiveSegment(currentTime) {
   const current = state.segmentButtons.get(segment.index);
   current?.classList.add('is-active');
 
-  if (elements.transcriptDetails.open) {
-    current?.scrollIntoView({ block: 'nearest' });
+  if (shouldAutoFollowTranscript()) {
+    scrollTranscriptSegmentIntoView(segment.index);
   }
 
   state.activeSegmentIndex = segment.index;
+}
+
+function shouldAutoFollowTranscript() {
+  return elements.transcriptDetails.open && player.playing;
+}
+
+function scrollTranscriptSegmentIntoView(segmentIndex) {
+  state.segmentButtons.get(segmentIndex)?.scrollIntoView({ block: 'nearest' });
 }
 
 async function fetchJson(url) {
