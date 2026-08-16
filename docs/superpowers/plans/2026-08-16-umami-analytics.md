@@ -335,66 +335,199 @@ git commit -m "feat: add safe Umami event tracking"
 **Beads:** `debofnight-d0v.11`
 
 **Files:**
-- Create: `scripts/analytics-wiring.test.mjs`
+- Modify: `scripts/analytics.test.mjs`
+- Modify: `src/analytics.js`
 - Modify: `index.html:44-59`
-- Modify: `src/main.js:4-181`
+- Modify: `src/main.js:4-102`
 
 **Interfaces:**
-- Consumes: `trackEvent`, `getTrackAnalyticsData`, and `bindPlaybackAnalytics` from `src/analytics.js`; existing Plyr and DOM events.
-- Produces: all seven approved event names at their specified interaction points, with no initialization or source-change events.
+- Consumes: `trackEvent`, `getTrackAnalyticsData`, and `bindPlaybackAnalytics` from `src/analytics.js`; DOM-like event targets for the playlist, transcript list, transcript summary, and Steam link.
+- Produces: `bindInteractionAnalytics(elements, getTrackData, sendEvent?)`, which records the four non-playback events from actual bubbling click events. Together with playback analytics, all seven approved events are covered.
 
-**Step 1: Write failing source-integration tests for every interaction**
+**Step 1: Write failing behavior tests for delegated interaction analytics**
 
-Create `scripts/analytics-wiring.test.mjs`:
+Append these helpers and tests to `scripts/analytics.test.mjs`, and add `bindInteractionAnalytics` to its existing import:
 
 ```js
-import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import test from 'node:test';
+function createClickSource() {
+  let clickHandler;
+  const containedTargets = new Set();
 
-const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const mainJs = await readFile(new URL('../src/main.js', import.meta.url), 'utf8');
+  return {
+    addEventListener(eventName, handler) {
+      assert.equal(eventName, 'click');
+      clickHandler = handler;
+    },
+    contains(target) {
+      return containedTargets.has(target);
+    },
+    contain(target) {
+      containedTargets.add(target);
+    },
+    click(target = this) {
+      clickHandler({ target });
+    },
+  };
+}
 
-test('page exposes dedicated transcript and Steam analytics hooks', () => {
-  assert.match(indexHtml, /<summary[^>]*data-transcript-toggle/);
-  assert.match(indexHtml, /<a[^>]*data-steam-link[^>]*href="http:\/\/store\.steampowered\.com\/app\/2600\/"/);
+function createClosestTarget(selector, matchedElement) {
+  return {
+    closest(candidate) {
+      return candidate === selector ? matchedElement : null;
+    },
+  };
+}
+
+function createInteractionHarness() {
+  const elements = {
+    playlist: createClickSource(),
+    transcriptList: createClickSource(),
+    transcriptSummary: createClickSource(),
+    transcriptDetails: { open: false },
+    steamLink: createClickSource(),
+  };
+  const tracks = [
+    { title: 'The Deb of Night #1', callerNames: ['Vigo', 'Gomez'] },
+    { title: 'The Deb of Night #2', callerNames: ['Greg', 'Andrei'] },
+  ];
+  const calls = [];
+
+  bindInteractionAnalytics(
+    elements,
+    (index = 1) => getTrackAnalyticsData(tracks[index], index),
+    (...args) => calls.push(args),
+  );
+
+  return { calls, elements };
+}
+
+test('bindInteractionAnalytics reports delegated playlist selection', () => {
+  const { calls, elements } = createInteractionHarness();
+  const button = { dataset: { trackIndex: '0' } };
+  elements.playlist.contain(button);
+
+  elements.playlist.click(createClosestTarget('[data-track-index]', button));
+
+  assert.deepEqual(calls, [
+    ['track-select', { track_number: 1, track_title: 'The Deb of Night #1 - Vigo, Gomez' }],
+  ]);
 });
 
-test('main binds playback analytics and resets it before replacing a source', () => {
-  assert.match(mainJs, /bindPlaybackAnalytics\(player,/);
-  assert.match(mainJs, /playbackAnalytics\.reset\(\);\s*state\.currentIndex = index;/);
+test('bindInteractionAnalytics reports delegated transcript seeking', () => {
+  const { calls, elements } = createInteractionHarness();
+  const button = { dataset: { segmentIndex: '7' } };
+  elements.transcriptList.contain(button);
+
+  elements.transcriptList.click(createClosestTarget('[data-segment-index]', button));
+
+  assert.deepEqual(calls, [
+    [
+      'transcript-seek',
+      {
+        track_number: 2,
+        track_title: 'The Deb of Night #2 - Greg, Andrei',
+        segment_number: 8,
+      },
+    ],
+  ]);
 });
 
-test('main tracks playlist selection with stable track metadata', () => {
-  assert.match(mainJs, /trackEvent\('track-select', getTrackAnalyticsData\(track, index\)\);/);
+test('bindInteractionAnalytics reports the transcript state entered by a visitor click', () => {
+  const { calls, elements } = createInteractionHarness();
+
+  elements.transcriptSummary.click();
+  elements.transcriptDetails.open = true;
+  elements.transcriptSummary.click();
+
+  assert.deepEqual(calls, [
+    ['transcript-toggle', { state: 'open' }],
+    ['transcript-toggle', { state: 'closed' }],
+  ]);
 });
 
-test('main tracks visitor transcript toggles without observing restored state', () => {
-  assert.match(mainJs, /elements\.transcriptSummary\.addEventListener\('click'/);
-  assert.match(mainJs, /trackEvent\('transcript-toggle', \{\s*state: elements\.transcriptDetails\.open \? 'closed' : 'open'/s);
-});
+test('bindInteractionAnalytics reports Steam link activation', () => {
+  const { calls, elements } = createInteractionHarness();
 
-test('main tracks transcript seeks with one-based segment metadata', () => {
-  assert.match(mainJs, /trackEvent\('transcript-seek', \{\s*\.\.\.getTrackAnalyticsData\(track, state\.currentIndex\),\s*segment_number: segment\.index \+ 1/s);
-});
+  elements.steamLink.click();
 
-test('main tracks Steam activations without changing navigation', () => {
-  assert.match(mainJs, /elements\.steamLink\.addEventListener\('click'/);
-  assert.match(mainJs, /trackEvent\('steam-click', \{ destination: 'steam-store' \}\);/);
+  assert.deepEqual(calls, [['steam-click', { destination: 'steam-store' }]]);
 });
 ```
 
-**Step 2: Run the wiring test and verify the expected assertion failures**
+The click-source double mirrors only the standard `addEventListener`, bubbling-target `closest`, container `contains`, and `dataset` contracts used by the production binder. Assertions remain on the real binder's emitted analytics contract, not on the double.
+
+**Step 2: Run the analytics tests and verify the missing-export failure**
 
 Run:
 
 ```bash
-node --test scripts/analytics-wiring.test.mjs
+node --test scripts/analytics.test.mjs
 ```
 
-Expected: FAIL because the new selectors, imports, lifecycle binding, resets, and interaction calls are absent.
+Expected: FAIL because `bindInteractionAnalytics` is not exported.
 
-**Step 3: Add stable DOM hooks**
+**Step 3: Implement delegated interaction analytics**
+
+Append this to `src/analytics.js`:
+
+```js
+export function bindInteractionAnalytics(elements, getTrackData, sendEvent = trackEvent) {
+  elements.playlist.addEventListener('click', (event) => {
+    const button = event.target.closest?.('[data-track-index]');
+
+    if (!button || !elements.playlist.contains(button)) {
+      return;
+    }
+
+    const index = Number(button.dataset.trackIndex);
+
+    if (Number.isInteger(index)) {
+      sendEvent('track-select', getTrackData(index));
+    }
+  });
+
+  elements.transcriptList.addEventListener('click', (event) => {
+    const button = event.target.closest?.('[data-segment-index]');
+
+    if (!button || !elements.transcriptList.contains(button)) {
+      return;
+    }
+
+    const segmentIndex = Number(button.dataset.segmentIndex);
+
+    if (Number.isInteger(segmentIndex)) {
+      sendEvent('transcript-seek', {
+        ...getTrackData(),
+        segment_number: segmentIndex + 1,
+      });
+    }
+  });
+
+  elements.transcriptSummary.addEventListener('click', () => {
+    sendEvent('transcript-toggle', {
+      state: elements.transcriptDetails.open ? 'closed' : 'open',
+    });
+  });
+
+  elements.steamLink.addEventListener('click', () => {
+    sendEvent('steam-click', { destination: 'steam-store' });
+  });
+}
+```
+
+Event delegation uses the existing `data-track-index` and `data-segment-index` attributes, so dynamically rendered buttons need no analytics-specific listeners.
+
+**Step 4: Run the analytics tests and verify all ten pass**
+
+Run:
+
+```bash
+node --test scripts/analytics.test.mjs
+```
+
+Expected: 10 tests pass.
+
+**Step 5: Add stable DOM hooks**
 
 Update the existing transcript summary and Steam anchor in `index.html` without changing their visible content or navigation:
 
@@ -406,12 +539,12 @@ Update the existing transcript summary and Steam anchor in `index.html` without 
         now go buy <a data-steam-link href="http://store.steampowered.com/app/2600/">vampire: the masquerade - bloodlines</a>
 ```
 
-**Step 4: Import analytics and cache the new elements**
+**Step 6: Import analytics and cache the new elements**
 
-Add the analytics import before the playlist import in `src/main.js`:
+Replace the analytics import in `src/main.js` with:
 
 ```js
-import { bindPlaybackAnalytics, getTrackAnalyticsData, trackEvent } from './analytics.js';
+import { bindInteractionAnalytics, bindPlaybackAnalytics, getTrackAnalyticsData } from './analytics.js';
 ```
 
 Add these entries to `elements`:
@@ -421,7 +554,7 @@ Add these entries to `elements`:
   steamLink: document.querySelector('[data-steam-link]'),
 ```
 
-**Step 5: Bind playback and static interaction analytics**
+**Step 7: Bind playback and delegated interaction analytics**
 
 Immediately after creating `player`, bind its lifecycle:
 
@@ -431,31 +564,17 @@ const playbackAnalytics = bindPlaybackAnalytics(player, () =>
 );
 ```
 
-Add this focused function, invoke it before `startRainJitter(elements.rain)`, and leave the existing `bindControls()` lifecycle unchanged:
+Bind interaction analytics immediately after playback analytics:
 
 ```js
-function bindAnalyticsControls() {
-  elements.transcriptSummary.addEventListener('click', () => {
-    trackEvent('transcript-toggle', {
-      state: elements.transcriptDetails.open ? 'closed' : 'open',
-    });
-  });
-
-  elements.steamLink.addEventListener('click', () => {
-    trackEvent('steam-click', { destination: 'steam-store' });
-  });
-}
+bindInteractionAnalytics(elements, (index = state.currentIndex) =>
+  getTrackAnalyticsData(state.tracks[index], index),
+);
 ```
 
-```js
-bindAnalyticsControls();
-startRainJitter(elements.rain);
-init();
-```
+Because the binder observes actual clicks, restoring `details.open` through `localStorage` does not emit `transcript-toggle`. Keyboard activation of `<summary>` still produces a click event. Delegation from the existing playlist and transcript containers captures both button and nested-span targets.
 
-Because tracking listens for summary `click`, restoring `details.open` through `localStorage` does not emit `transcript-toggle`. Keyboard activation of `<summary>` still produces a click event.
-
-**Step 6: Reset lifecycle state before every valid source change**
+**Step 8: Reset lifecycle state before every valid source change**
 
 In `selectTrack`, after the invalid-track guard and before assigning `state.currentIndex`, add:
 
@@ -465,41 +584,17 @@ In `selectTrack`, after the invalid-track guard and before assigning `state.curr
 
 The reset occurs before `player.source` changes, so any pause generated by source replacement is suppressed.
 
-**Step 7: Track playlist and transcript-segment activation**
-
-Make the playlist click listener record the selected track before calling `selectTrack`:
-
-```js
-      button.addEventListener('click', () => {
-        trackEvent('track-select', getTrackAnalyticsData(track, index));
-        selectTrack(index, { autoplay: player.playing });
-      });
-```
-
-Make the transcript-segment click listener record the current track and one-based segment number before seeking:
-
-```js
-    button.addEventListener('click', () => {
-      trackEvent('transcript-seek', {
-        ...getTrackAnalyticsData(track, state.currentIndex),
-        segment_number: segment.index + 1,
-      });
-      player.currentTime = segment.start;
-      player.play();
-    });
-```
-
-**Step 8: Run focused analytics tests and verify they pass**
+**Step 9: Run focused analytics tests and verify they pass**
 
 Run:
 
 ```bash
-node --test scripts/analytics.test.mjs scripts/analytics-wiring.test.mjs
+node --test scripts/analytics.test.mjs
 ```
 
-Expected: 12 tests pass.
+Expected: 10 tests pass.
 
-**Step 9: Run the existing player/layout regression tests**
+**Step 10: Run the existing player/layout regression tests**
 
 Run:
 
@@ -509,10 +604,10 @@ node --test scripts/player-helpers.test.mjs scripts/page-layout.test.mjs
 
 Expected: all existing tests plus the new loader test pass.
 
-**Step 10: Commit the interaction wiring**
+**Step 11: Commit the interaction wiring**
 
 ```bash
-git add index.html src/main.js scripts/analytics-wiring.test.mjs
+git add index.html src/analytics.js src/main.js scripts/analytics.test.mjs
 git commit -m "feat: track player and transcript engagement"
 ```
 
@@ -565,7 +660,7 @@ Run:
 
 ```bash
 git diff --stat origin/master...HEAD
-git diff origin/master...HEAD -- index.html src/analytics.js src/main.js scripts/analytics.test.mjs scripts/analytics-wiring.test.mjs scripts/page-layout.test.mjs
+git diff origin/master...HEAD -- index.html src/analytics.js src/main.js scripts/analytics.test.mjs scripts/page-layout.test.mjs
 ```
 
 Expected: only the Umami loader, legacy analytics removal, analytics boundary, seven approved events, DOM hooks, and their tests are present.
