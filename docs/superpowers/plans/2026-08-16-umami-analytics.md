@@ -355,8 +355,9 @@ function createClickSource() {
 
   return {
     addEventListener(eventName, handler) {
-      assert.equal(eventName, 'click');
-      clickHandler = handler;
+      if (eventName === 'click') {
+        clickHandler = handler;
+      }
     },
     contains(target) {
       return containedTargets.has(target);

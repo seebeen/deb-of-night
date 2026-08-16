@@ -1,6 +1,7 @@
 import 'plyr/dist/plyr.css';
 import Plyr from 'plyr';
 
+import { bindInteractionAnalytics, bindPlaybackAnalytics, getTrackAnalyticsData } from './analytics.js';
 import { getNextTrackIndex, getTrackDisplayTitle, normalizeTrackUrl } from './playlist.js';
 import { startRainJitter } from './rain.js';
 import { findActiveSegment, getDisplaySpeakerLabel } from './transcript.js';
@@ -14,8 +15,10 @@ const elements = {
   playlist: document.querySelector('[data-playlist]'),
   trackStatus: document.querySelector('[data-track-status]'),
   transcriptDetails: document.querySelector('[data-transcript-details]'),
+  transcriptSummary: document.querySelector('[data-transcript-toggle]'),
   transcriptMeta: document.querySelector('[data-transcript-meta]'),
   transcriptList: document.querySelector('[data-transcript-list]'),
+  steamLink: document.querySelector('[data-steam-link]'),
   rain: document.querySelector('.rain'),
 };
 
@@ -35,6 +38,13 @@ const player = new Plyr(elements.audio, {
     update: true,
   },
 });
+
+const playbackAnalytics = bindPlaybackAnalytics(player, () =>
+  getTrackAnalyticsData(state.tracks[state.currentIndex], state.currentIndex),
+);
+bindInteractionAnalytics(elements, (index = state.currentIndex) =>
+  getTrackAnalyticsData(state.tracks[index], index),
+);
 
 startRainJitter(elements.rain);
 init();
@@ -87,6 +97,7 @@ async function selectTrack(index, { autoplay = false } = {}) {
     return;
   }
 
+  playbackAnalytics.reset();
   state.currentIndex = index;
   state.transcript = null;
   state.activeSegmentIndex = -1;

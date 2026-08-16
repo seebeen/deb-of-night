@@ -44,3 +44,46 @@ export function bindPlaybackAnalytics(player, getCurrentTrackData, sendEvent = t
     },
   };
 }
+
+export function bindInteractionAnalytics(elements, getTrackData, sendEvent = trackEvent) {
+  elements.playlist.addEventListener('click', (event) => {
+    const button = event.target.closest?.('[data-track-index]');
+
+    if (!button || !elements.playlist.contains(button)) {
+      return;
+    }
+
+    const index = Number(button.dataset.trackIndex);
+
+    if (Number.isInteger(index)) {
+      sendEvent('track-select', getTrackData(index));
+    }
+  });
+
+  elements.transcriptList.addEventListener('click', (event) => {
+    const button = event.target.closest?.('[data-segment-index]');
+
+    if (!button || !elements.transcriptList.contains(button)) {
+      return;
+    }
+
+    const segmentIndex = Number(button.dataset.segmentIndex);
+
+    if (Number.isInteger(segmentIndex)) {
+      sendEvent('transcript-seek', {
+        ...getTrackData(),
+        segment_number: segmentIndex + 1,
+      });
+    }
+  });
+
+  elements.transcriptSummary.addEventListener('click', () => {
+    sendEvent('transcript-toggle', {
+      state: elements.transcriptDetails.open ? 'closed' : 'open',
+    });
+  });
+
+  elements.steamLink.addEventListener('click', () => {
+    sendEvent('steam-click', { destination: 'steam-store' });
+  });
+}
