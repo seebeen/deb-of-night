@@ -195,3 +195,14 @@ test('image layers use the original top-left composition', () => {
   assert.ok(foregroundBlock, 'expected a .foreground style block');
   assert.match(foregroundBlock, /left top \/ cover no-repeat/);
 });
+
+test('page loads Umami and removes legacy Google Analytics', () => {
+  assert.match(
+    indexHtml,
+    /<script defer src="https:\/\/analytics\.oblak\.host\/script\.js" data-website-id="79e1902f-873a-4d0b-b4d2-0a0a891ab333"><\/script>/,
+  );
+  assert.doesNotMatch(indexHtml, /googletagmanager\.com/);
+  assert.doesNotMatch(indexHtml, /\bdataLayer\b/);
+  assert.doesNotMatch(indexHtml, /\bgtag\s*\(/);
+  assert.doesNotMatch(indexHtml, /UA-140789866-1/);
+});
