@@ -24,7 +24,7 @@ Create `src/analytics.js` as the single integration boundary. It will:
 - build consistent, low-cardinality track metadata; and
 - bind and manage playback lifecycle analytics independently from rendering.
 
-Track metadata uses `track_number` as the manifest position plus one and `track_title` as the existing display title. No visitor identifiers, transcript text, URLs, timestamps, playback positions, or other free-form data are attached.
+Track metadata uses `track_number` as the manifest position plus one and `track_title` as the existing display title. No visitor identifiers, transcript text, destination URLs, timestamps, playback positions, or other free-form values are added as custom event data. Umami's standard page and event properties remain unchanged.
 
 ## Event Contract
 
